@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { fetchChatResponse } from "../services/chatService"; // ✅ Import API từ service
+import { sendChatMessage } from "../services/chatService";
 
 interface Message {
   id: number;
@@ -28,28 +28,37 @@ const ChatWindow = ({ activeSession }: { activeSession: number }) => {
 
   const sendMessage = async () => {
     if (!inputMessage.trim()) return;
-
+  
     const newMessage: Message = { id: Date.now(), text: inputMessage, sender: "user" };
-
-    // ✅ Gọi API từ service
-    const botReplyText = await fetchChatResponse();
-    const botReply: Message = { id: Date.now() + 1, text: botReplyText, sender: "bot" };
-
+  
+    // Hiển thị tin nhắn người dùng ngay lập tức
     setSessions((prev) => {
       const updatedSessions = {
         ...prev,
-        [activeSession]: [...(prev[activeSession] || []), newMessage, botReply],
+        [activeSession]: [...(prev[activeSession] || []), newMessage],
       };
-
-      if (typeof window !== "undefined") {
-        localStorage.setItem("chatSessions", JSON.stringify(updatedSessions));
-      }
-
+      localStorage.setItem("chatSessions", JSON.stringify(updatedSessions));
       return updatedSessions;
     });
-
+  
     setInputMessage("");
-  };
+  
+    try {
+      const response = await sendChatMessage(inputMessage);
+      const botReply: Message = { id: Date.now() + 1, text: response, sender: "bot" };
+  
+      setSessions((prev) => {
+        const updatedSessions = {
+          ...prev,
+          [activeSession]: [...(prev[activeSession] || []), botReply],
+        };
+        localStorage.setItem("chatSessions", JSON.stringify(updatedSessions));
+        return updatedSessions;
+      });
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
+  };  
 
   return (
     <div className="flex flex-col h-full bg-white shadow-md rounded-lg overflow-hidden">

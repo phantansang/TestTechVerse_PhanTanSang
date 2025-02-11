@@ -1,11 +1,16 @@
-export const fetchChatResponse = async (): Promise<string> => {
+export const sendChatMessage = async (message: string): Promise<string> => {
     try {
-      const response = await fetch("http://localhost:5000/api/chatbot");
+      const response = await fetch("http://localhost:5000/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+      });
+  
       const data = await response.json();
-      return data.message || "Sorry, I don't understand.";
+      return data.message;
     } catch (error) {
-      console.error("Error fetching chatbot response:", error);
-      return "Sorry, something went wrong.";
+      console.error("Failed to send message:", error);
+      return "Oops! Something went wrong.";
     }
   };
   

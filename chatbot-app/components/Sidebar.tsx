@@ -6,11 +6,12 @@ interface Session {
 }
 
 interface SidebarProps {
+  activeSessionId: number; // 🟢 Thêm prop để biết session nào đang active
   onSelectSession: (sessionId: number) => void;
   onCreateNewSession: (newSessionId: number) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ onSelectSession, onCreateNewSession }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeSessionId, onSelectSession, onCreateNewSession }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
 
   useEffect(() => {
@@ -40,7 +41,13 @@ const Sidebar: React.FC<SidebarProps> = ({ onSelectSession, onCreateNewSession }
       </button>
       <ul>
         {sessions.map((session) => (
-          <li key={session.id} className="p-2 cursor-pointer hover:bg-gray-300 rounded-lg" onClick={() => onSelectSession(session.id)}>
+          <li
+            key={session.id}
+            className={`p-2 cursor-pointer rounded-lg transition-colors ${
+              session.id === activeSessionId ? "bg-gray-500 text-white font-bold" : "hover:bg-gray-300"
+            }`}
+            onClick={() => onSelectSession(session.id)}
+          >
             {session.name}
           </li>
         ))}

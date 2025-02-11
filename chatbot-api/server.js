@@ -1,18 +1,42 @@
 const express = require("express");
 const cors = require("cors");
-const fs = require("fs");
-const path = require("path");
+const axios = require("axios");
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const chatbotData = JSON.parse(fs.readFileSync(path.join(__dirname, "chatbot.json"), "utf-8"));
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 
-// API để lấy phản hồi ngẫu nhiên
-app.get("/api/chatbot", (req, res) => {
-  const randomResponse = chatbotData.responses[Math.floor(Math.random() * chatbotData.responses.length)];
-  res.json({ message: randomResponse });
+app.post("/api/chat", async (req, res) => {
+  try {
+    const userMessage = req.body.message;
+
+    if (!userMessage) {
+      return res.status(400).json({ error: "Message is required" });
+    }
+
+    const response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: "openai/gpt-3.5-turbo",
+        messages: [{ role: "user", content: userMessage }],
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    res.json({ message: response.data.choices[0].message.content });
+  } catch (error) {
+    console.error("Error fetching response from OpenRouter:", error);
+    res.status(500).json({ error: "Failed to connect to OpenRouter API" });
+  }
 });
 
 const PORT = 5000;
