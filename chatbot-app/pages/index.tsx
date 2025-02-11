@@ -1,14 +1,18 @@
-import { useState } from "react";
-import Sidebar from "../components/Sidebar";
+import React, { useState } from "react";
 import ChatWindow from "../components/ChatWindow";
+import Sidebar from "../components/Sidebar";
 
-export default function Home() {
+const Home = () => {
   const [activeSession, setActiveSession] = useState(1);
 
   return (
-    <div className="flex w-full h-screen">
+    <div className="flex h-screen">
       <Sidebar onSelectSession={setActiveSession} onCreateNewSession={() => setActiveSession(Date.now())} />
-      <ChatWindow activeSession={activeSession} />
+      <div className="flex-1 flex flex-col">
+        <ChatWindow activeSession={activeSession} />
+      </div>
     </div>
   );
-}
+};
+
+export default Home;
