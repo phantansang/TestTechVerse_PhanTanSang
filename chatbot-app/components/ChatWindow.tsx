@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { fetchChatResponse } from "../services/chatService"; // ✅ Import API từ service
 
 interface Message {
   id: number;
@@ -8,17 +9,8 @@ interface Message {
 
 const ChatWindow = ({ activeSession }: { activeSession: number }) => {
   const [sessions, setSessions] = useState<{ [key: number]: Message[] }>({});
-  const [botResponses, setBotResponses] = useState<string[]>([]);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [inputMessage, setInputMessage] = useState("");
-
-  // Load bot responses from chatbot.json
-  useEffect(() => {
-    fetch("/data/chatbot.json")
-      .then((res) => res.json())
-      .then((data) => setBotResponses(data.responses))
-      .catch((err) => console.error("Failed to load bot responses:", err));
-  }, []);
 
   // Load chat sessions from localStorage
   useEffect(() => {
@@ -34,16 +26,14 @@ const ChatWindow = ({ activeSession }: { activeSession: number }) => {
     }
   }, [sessions]);
 
-  const getRandomResponse = () => {
-    if (botResponses.length === 0) return "Sorry, I have nothing to say!";
-    return botResponses[Math.floor(Math.random() * botResponses.length)];
-  };
-
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!inputMessage.trim()) return;
 
     const newMessage: Message = { id: Date.now(), text: inputMessage, sender: "user" };
-    const botReply: Message = { id: Date.now() + 1, text: getRandomResponse(), sender: "bot" };
+
+    // ✅ Gọi API từ service
+    const botReplyText = await fetchChatResponse();
+    const botReply: Message = { id: Date.now() + 1, text: botReplyText, sender: "bot" };
 
     setSessions((prev) => {
       const updatedSessions = {
