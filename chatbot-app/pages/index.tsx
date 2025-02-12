@@ -25,11 +25,24 @@ const Home = () => {
       }
     };
 
+    const updateSessionName = (sessionId: number, newName: string) => {
+      setSessions((prevSessions) =>
+        prevSessions.map((session) => (session.id === sessionId ? { ...session, name: newName } : session))
+      );
+    
+      localStorage.setItem(
+        "chatList",
+        JSON.stringify(sessions.map((session) => (session.id === sessionId ? { ...session, name: newName } : session)))
+      );
+    };
+    
+
   return (
     <div className="flex h-screen">
       <Sidebar 
   activeSessionId={activeSession} 
-  onSelectSession={setActiveSession} 
+  onSelectSession={setActiveSession}
+  onUpdateSessionName={updateSessionName} 
   onCreateNewSession={createNewSession} 
 />
 

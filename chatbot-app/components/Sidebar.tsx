@@ -6,12 +6,13 @@ interface Session {
 }
 
 interface SidebarProps {
-  activeSessionId: number; // 🟢 Thêm prop để biết session nào đang active
+  activeSessionId: number;
   onSelectSession: (sessionId: number) => void;
   onCreateNewSession: (newSessionId: number) => void;
+  onUpdateSessionName: (sessionId: number, newName: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeSessionId, onSelectSession, onCreateNewSession }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeSessionId, onSelectSession, onCreateNewSession, onUpdateSessionName }) => {
   const [sessions, setSessions] = useState<Session[]>([]);
 
   useEffect(() => {
@@ -28,9 +29,26 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSessionId, onSelectSession, onC
   }, [sessions]);
 
   const createNewSession = () => {
-    const newSession = { id: Date.now(), name: `Chat ${sessions.length + 1}` };
-    setSessions([...sessions, newSession]);
-    onCreateNewSession(newSession.id);
+    const newSessionId = Date.now();
+
+    setSessions((prevSessions) => {
+      const updatedSessions = [...prevSessions];
+
+      // Đổi tên session hiện tại nếu nó là "New Chat"
+      const currentSessionIndex = updatedSessions.findIndex((s) => s.id === activeSessionId);
+      if (currentSessionIndex !== -1 && updatedSessions[currentSessionIndex].name === "New Chat") {
+        const chatNumber = updatedSessions.filter((s) => s.name.startsWith("Chat")).length + 1;
+        updatedSessions[currentSessionIndex].name = `Chat ${chatNumber}`;
+        onUpdateSessionName(activeSessionId, updatedSessions[currentSessionIndex].name);
+      }
+
+      // Thêm session mới với tên "New Chat"
+      updatedSessions.push({ id: newSessionId, name: "New Chat" });
+
+      return updatedSessions;
+    });
+
+    onCreateNewSession(newSessionId);
   };
 
   return (
@@ -43,9 +61,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSessionId, onSelectSession, onC
         {sessions.map((session) => (
           <li
             key={session.id}
-            className={`p-2 cursor-pointer rounded-lg transition-colors ${
-              session.id === activeSessionId ? "bg-gray-500 text-white font-bold" : "hover:bg-gray-300"
-            }`}
+            className={`p-2 cursor-pointer rounded-lg ${session.id === activeSessionId ? "bg-blue-300 font-bold" : "hover:bg-gray-300"}`}
             onClick={() => onSelectSession(session.id)}
           >
             {session.name}
