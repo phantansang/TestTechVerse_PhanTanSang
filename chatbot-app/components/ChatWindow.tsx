@@ -7,6 +7,14 @@ interface Message {
   sender: "user" | "bot";
 }
 
+const formatMessage = (text: string) => {
+  return text.split("\n").map((line, index) => (
+    <p key={index} className="mb-1">
+      {line}
+    </p>
+  ));
+};
+
 const ChatWindow = ({ activeSession }: { activeSession: number }) => {
   const [sessions, setSessions] = useState<{ [key: number]: Message[] }>({});
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -66,7 +74,7 @@ const ChatWindow = ({ activeSession }: { activeSession: number }) => {
         {sessions[activeSession]?.map((msg) => (
           <div key={msg.id} className={`p-2 my-1 ${msg.sender === "user" ? "text-right" : "text-left"}`}>
             <span className={`inline-block p-2 rounded-lg ${msg.sender === "user" ? "bg-blue-500 text-white" : "bg-gray-300"}`}>
-              {msg.text}
+            {msg.sender === "bot" ? formatMessage(msg.text) : msg.text}
             </span>
           </div>
         ))}
